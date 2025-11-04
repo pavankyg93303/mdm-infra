@@ -1,0 +1,79 @@
+{
+  "name": "mdm-orchestration-pipeline",
+  "properties": {
+    "activities": [
+      {
+        "name": "CopySourceToADLS",
+        "type": "Copy",
+        "dependsOn": [],
+        "policy": {},
+        "typeProperties": {
+          "source": {
+            "type": "HttpSource"
+          },
+          "sink": {
+            "type": "AzureBlobFS"
+          }
+        },
+        "linkedServiceName": {
+          "referenceName": "LS_ADLS_gen2",
+          "type": "LinkedServiceReference"
+        }
+      },
+      {
+        "name": "RunDatabricks_Ingest",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          {
+            "activity": "CopySourceToADLS",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "typeProperties": {
+          "notebookPath": "/Repos/mdm/ingestion",
+          "baseParameters": {}
+        },
+        "linkedServiceName": {
+          "referenceName": "LS_Databricks",
+          "type": "LinkedServiceReference"
+        }
+      },
+      {
+        "name": "RunDatabricks_MatchAndMerge",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          {
+            "activity": "RunDatabricks_Ingest",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "typeProperties": {
+          "notebookPath": "/Repos/mdm/matching_and_merge",
+          "baseParameters": {}
+        },
+        "linkedServiceName": {
+          "referenceName": "LS_Databricks",
+          "type": "LinkedServiceReference"
+        }
+      },
+      {
+        "name": "RefreshSynapseViews",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [
+          {
+            "activity": "RunDatabricks_MatchAndMerge",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "typeProperties": {
+          "storedProcedureName": "spRefreshMaterializedGolden"
+        },
+        "linkedServiceName": {
+          "referenceName": "LS_Synapse",
+          "type": "LinkedServiceReference"
+        }
+      }
+    ],
+    "annotations": []
+  }
+}
