@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "prefix": {
+      "value": "mdm"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "tags": {
+      "value": {
+        "environment": "dev",
+        "owner": "pavankyg93303"
+      }
+    },
+    "databricksSku": {
+      "value": "premium"
+    },
+    "synapseSqlAdmin": {
+      "value": "sqladminuser"
+    },
+    "synapseSqlAdminPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RG>/providers/Microsoft.KeyVault/vaults/<EXISTING_KV>"
+        },
+        "secretName": "<existing-secret-name>"
+      }
+    },
+    "enableKeyVaultPurgeProtection": {
+      "value": false
+    },
+    "keyVaultAdminObjectId": {
+      "value": "<AAD_OBJECT_ID_FOR_KV_ACCESS>"
+    }
+  }
+}
